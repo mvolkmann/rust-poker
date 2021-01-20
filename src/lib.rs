@@ -299,6 +299,8 @@ pub fn rank_name(rank: char) -> String {
     rank
 }
 
+//TODO: Why does the compiler think this function is never used?
+//TODO: It is used in a test in this file and in tests.rs.
 /// ```
 /// assert_eq!(poker::suit_name('♣'), "clubs");
 /// assert_eq!(poker::suit_name('♦'), "diamonds");
