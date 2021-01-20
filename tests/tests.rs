@@ -47,5 +47,3 @@ fn it_evaluates_hand() {
     let hand = Hand::from_str("Q♥ 7♥ J♣ 5♦ A♠").unwrap();
     assert_eq!(hand.evaluate(), "high card ace of ♠");
 }
-
-//TODO: Add more tests.
