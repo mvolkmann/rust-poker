@@ -121,6 +121,8 @@ impl FromStr for Hand {
         for piece in s.split_whitespace() {
             if let Ok(card) = Card::from_str(piece) {
                 hand.cards.push(card);
+            } else {
+                return Err(format!("invalid card \"{}\"", piece));
             }
         }
         Ok(hand)
@@ -151,7 +153,6 @@ impl Hand {
     /// assert_eq!(hand.evaluate(), "full house");
     /// ```
     pub fn evaluate(&self) -> String {
-        println!("lib.rs evaluate: self.cards = {:?}", self.cards);
         let mut suit_map = HashMap::new();
         for card in &self.cards {
             *suit_map.entry(card.suit).or_insert(0) += 1;
@@ -162,13 +163,18 @@ impl Hand {
             *rank_map.entry(card.rank).or_insert(0) += 1;
         }
 
-        println!("lib.rs evaluate: suit_map = {:?}", suit_map);
         let flush = suit_map.values().any(|&count| count == 5);
-        println!("lib.rs evaluate: flush = {:?}", flush);
 
-        //TODO: Why do I need count here and *count on next line?
+        // The closure passed to "any" method is passed references to items.
+        // It consumes the iterator on which it is called.
         let three_of_a_kind = rank_map.values().any(|&count| count == 3);
+
+        // The closure passed to "filter" is passed references to
+        // references to items.  That is why a dereference is needed.
+        // It does not consume the iterator on which it is called
+        // and instead returns a new iterator.
         let pairs = rank_map.values().filter(|&count| *count == 2);
+
         let pair_count = pairs.count();
         let two_of_a_kind = pair_count > 0;
         let two_pairs = pair_count == 2;
@@ -299,14 +305,13 @@ pub fn rank_name(rank: char) -> String {
     rank
 }
 
-//TODO: Why does the compiler think this function is never used?
-//TODO: It is used in a test in this file and in tests.rs.
 /// ```
 /// assert_eq!(poker::suit_name('♣'), "clubs");
 /// assert_eq!(poker::suit_name('♦'), "diamonds");
 /// assert_eq!(poker::suit_name('♥'), "hearts");
 /// assert_eq!(poker::suit_name('♠'), "spades");
 /// ```
+#[allow(unused)] // not used by the app yet, but uses by tests
 pub fn suit_name(suit: char) -> String {
     let suit = match suit {
         '♣' => "clubs",

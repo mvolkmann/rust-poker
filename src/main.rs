@@ -1,16 +1,12 @@
-mod lib;
-use lib::Hand;
+use poker::Hand;
 use std::str::FromStr;
 
 fn main() {
     let hand = Hand::deal(5);
     println!("hand = {}", hand);
-    for card in &hand.cards {
-        println!("{}", card);
-    }
-    println!("\n{}", hand.evaluate());
+    println!("{}", hand.evaluate());
 
-    let hand = poker::Hand::from_str("A♥ K♥ Q♥ J♥ T♥").unwrap();
-    println!("hand = {}", hand);
-    println!("\n{}", hand.evaluate());
+    let hand = Hand::from_str("A♥ K♥ Q♥ J♥ 10♥").unwrap();
+    println!("\nhand = {}", hand);
+    println!("{}", hand.evaluate());
 }
