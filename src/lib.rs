@@ -1,4 +1,3 @@
-//TODO: Add doc tests for all of these functions!
 // rng stands for "random number generator".
 use rand::Rng;
 use std::collections::HashMap;
@@ -46,19 +45,42 @@ impl FromStr for Card {
 
     /// ```
     /// use std::str::FromStr;
-    /// let card = poker::Card::from_str("K♥").unwrap();
+    /// let card = poker::Card::from_str("K♠").unwrap();
     /// assert_eq!(card.rank, 'K');
+    /// assert_eq!(card.suit, '♠');
+    /// let card = poker::Card::from_str("10♥").unwrap();
+    /// assert_eq!(card.rank, 'T');
     /// assert_eq!(card.suit, '♥');
+    /// let result = poker::Card::from_str("T♥");
+    /// assert_eq!(result, Err(String::from("bad card string \"T♥\"")));
     /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut iter = s.chars();
-        //TODO: Consider fixing this so the rank can be "10" instead of "T".
-        if let Some(rank) = iter.next() {
-            if let Some(suit) = iter.next() {
-                return Ok(Card { suit, rank });
-            }
+        let err = Err(format!("bad card string \"{}\"", s));
+
+        let letters: Vec<char> = s.chars().collect();
+        let len = letters.len();
+        if len != 2 && len != 3 {
+            return err;
         }
-        Err("bad card string".to_string())
+
+        let mut rank = letters[0];
+        if !"123456789JQKA".contains(rank) {
+            return err;
+        }
+
+        let mut suit = letters[1];
+        if rank == '1' {
+            if suit != '0' {
+                return err;
+            }
+            rank = 'T'; // for 10
+            suit = letters[2];
+        }
+        if !SUITS.contains(suit) {
+            return err;
+        }
+
+        Ok(Card { suit, rank })
     }
 }
 
@@ -70,8 +92,8 @@ pub struct Hand {
 impl Display for Hand {
     /// ```
     /// use std::str::FromStr;
-    /// let hand = poker::Hand::from_str("K♥ 4♦ 9♥ J♠ A♦").unwrap();
-    /// assert_eq!(format!("{}", hand), "king of ♥, 4 of ♦, 9 of ♥, jack of ♠, ace of ♦");
+    /// let hand = poker::Hand::from_str("K♥ 4♦ 10♥ J♠ A♦").unwrap();
+    /// assert_eq!(format!("{}", hand), "king of ♥, 4 of ♦, 10 of ♥, jack of ♠, ace of ♦");
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut s = String::new();
@@ -90,7 +112,9 @@ impl FromStr for Hand {
 
     /// ```
     /// use std::str::FromStr;
-    /// let hand = poker::Hand::from_str("K♥ 4♦ 9♥ J♠ A♦").unwrap();
+    /// let hand = poker::Hand::from_str("K♥ 4♦ 10♥ J♠ A♦").unwrap();
+    /// assert_eq!(hand.cards.len(), 5);
+    /// let hand = poker::Hand::from_str("A♥ K♥ Q♥ J♥ 10♥").unwrap();
     /// assert_eq!(hand.cards.len(), 5);
     /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -105,6 +129,7 @@ impl FromStr for Hand {
 }
 impl Hand {
     pub fn evaluate(&self) -> String {
+        println!("lib.rs evaluate: self.cards = {:?}", self.cards);
         let mut suit_map = HashMap::new();
         for card in &self.cards {
             *suit_map.entry(card.suit).or_insert(0) += 1;
@@ -115,7 +140,9 @@ impl Hand {
             *rank_map.entry(card.rank).or_insert(0) += 1;
         }
 
+        println!("lib.rs evaluate: suit_map = {:?}", suit_map);
         let flush = suit_map.values().any(|&count| count == 5);
+        println!("lib.rs evaluate: flush = {:?}", flush);
 
         //TODO: Why do I need count here and *count on next line?
         let three_of_a_kind = rank_map.values().any(|&count| count == 3);
@@ -142,7 +169,7 @@ impl Hand {
 
         let r = rank_name(kind_rank);
 
-        if flush && kind_rank == 'A' {
+        if straight && flush && kind_rank == 'A' {
             "royal flush".to_string()
         } else if straight && flush {
             "straight flush".to_string()
@@ -185,11 +212,11 @@ pub fn deal(n: usize) -> Hand {
     hand
 }
 
-fn get_suit(hand: &Hand, rank: char) -> String {
+fn get_suit(hand: &Hand, rank: char) -> char {
     if let Some(card) = hand.cards.iter().find(|&c| c.rank == rank) {
-        suit_name(card.suit)
+        card.suit
     } else {
-        String::from("not found")
+        '?'
     }
 }
 
