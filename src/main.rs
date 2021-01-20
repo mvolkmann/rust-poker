@@ -1,9 +1,9 @@
 mod lib;
-use lib::deal;
+use lib::Hand;
 use std::str::FromStr;
 
 fn main() {
-    let hand = deal(5);
+    let hand = Hand::deal(5);
     println!("hand = {}", hand);
     for card in &hand.cards {
         println!("{}", card);

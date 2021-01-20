@@ -5,8 +5,8 @@ use std::fmt;
 use std::fmt::Display;
 use std::str::FromStr;
 
-const SUITS: &str = "♣♦♥♠";
-const RANKS: &str = "23456789TJQKA"; // T is for 10
+pub const SUITS: &str = "♣♦♥♠";
+pub const RANKS: &str = "23456789TJQKA"; // T is for 10
 
 // Integration tests go in the "tests" directory
 // in files with any name and a ".rs" file extension.
@@ -35,7 +35,6 @@ impl Display for Card {
     /// assert_eq!(format!("{}", card), "king of ♥");
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        //write!(f, "{}{}", rank_name(self.rank), self.suit)
         write!(f, "{} of {}", rank_name(self.rank), self.suit)
     }
 }
@@ -128,6 +127,29 @@ impl FromStr for Hand {
     }
 }
 impl Hand {
+    /// ```
+    /// let hand = poker::Hand::deal(5);
+    /// assert_eq!(hand.cards.len(), 5);
+    /// ```
+    pub fn deal(n: usize) -> Self {
+        let mut hand = Self::default();
+        while hand.cards.len() < n {
+            let card = Card {
+                suit: random_suit(),
+                rank: random_rank(),
+            };
+            if !hand.cards.contains(&card) {
+                hand.cards.push(card);
+            }
+        }
+        hand
+    }
+
+    /// ```
+    /// use std::str::FromStr;
+    /// let hand = poker::Hand::from_str("Q♥ 7♥ Q♣ Q♦ 7♠").unwrap();
+    /// assert_eq!(hand.evaluate(), "full house");
+    /// ```
     pub fn evaluate(&self) -> String {
         println!("lib.rs evaluate: self.cards = {:?}", self.cards);
         let mut suit_map = HashMap::new();
@@ -194,25 +216,11 @@ impl Hand {
 }
 
 /// ```
-/// let hand = poker::deal(5);
-/// assert_eq!(hand.cards.len(), 5);
+/// use std::str::FromStr;
+/// let hand = poker::Hand::from_str("Q♥ 9♣ J♦ 8♠ 10♥").unwrap();
+/// assert_eq!(poker::get_suit(&hand, 'J'), '♦');
 /// ```
-pub fn deal(n: usize) -> Hand {
-    //let mut hand = Vec::new();
-    let mut hand = Hand::default();
-    while hand.cards.len() < n {
-        let card = Card {
-            suit: random_suit(),
-            rank: random_rank(),
-        };
-        if !hand.cards.contains(&card) {
-            hand.cards.push(card);
-        }
-    }
-    hand
-}
-
-fn get_suit(hand: &Hand, rank: char) -> char {
+pub fn get_suit(hand: &Hand, rank: char) -> char {
     if let Some(card) = hand.cards.iter().find(|&c| c.rank == rank) {
         card.suit
     } else {
@@ -220,8 +228,12 @@ fn get_suit(hand: &Hand, rank: char) -> char {
     }
 }
 
-//TODO: This function seems to not be working.
-fn is_straight(hand: &Hand) -> bool {
+/// ```
+/// use std::str::FromStr;
+/// let hand = poker::Hand::from_str("Q♥ 9♣ J♦ 8♠ 10♥").unwrap();
+/// assert!(poker::is_straight(&hand));
+/// ```
+pub fn is_straight(hand: &Hand) -> bool {
     let mut low_index = RANKS.len();
     let mut high_index = 0;
     for card in &hand.cards {
@@ -245,14 +257,22 @@ pub fn rank_cmp(rank1: char, rank2: char) -> i8 {
     index2 - index1
 }
 
-fn random_rank() -> char {
+/// ```
+/// let rank = poker::random_rank();
+/// assert!(poker::RANKS.contains(rank));
+/// ```
+pub fn random_rank() -> char {
     let mut rng = rand::thread_rng();
     let index = rng.gen_range(0..RANKS.len());
     //ranks.as_bytes()[index]
     RANKS.chars().nth(index).unwrap()
 }
 
-fn random_suit() -> char {
+/// ```
+/// let suit = poker::random_suit();
+/// assert!(poker::SUITS.contains(suit));
+/// ```
+pub fn random_suit() -> char {
     let mut rng = rand::thread_rng();
     let index = rng.gen_range(0..4);
     SUITS.chars().nth(index).unwrap()
