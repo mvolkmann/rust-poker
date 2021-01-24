@@ -19,6 +19,16 @@ mod tests {
     #[test]
     fn it_gets_suit_name() {
         assert_eq!(suit_name('♣'), "clubs");
+        assert_eq!(suit_name('♦'), "diamonds");
+        assert_eq!(suit_name('♥'), "hearts");
+        assert_eq!(suit_name('♠'), "spades");
+    }
+
+    #[test]
+    fn it_deals() {
+        let size = 5;
+        let hand = Hand::deal(size);
+        assert_eq!(hand.cards.len(), size);
     }
 }
 
@@ -293,6 +303,7 @@ pub fn random_suit() -> char {
 /// assert_eq!(poker::rank_name('2'), "2");
 /// ```
 pub fn rank_name(rank: char) -> String {
+    println!("file {}, line {}", file!(), line!());
     let rank = match rank {
         // Why do I need to convert each of these to String?
         'T' => "10".to_string(),

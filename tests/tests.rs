@@ -3,18 +3,6 @@ use poker::Hand;
 use std::str::FromStr;
 
 #[test]
-fn it_gets_suit_name() {
-    assert_eq!(poker::suit_name('♣'), "clubs");
-}
-
-#[test]
-fn it_deals() {
-    let size = 5;
-    let hand = Hand::deal(size);
-    assert_eq!(hand.cards.len(), size);
-}
-
-#[test]
 fn it_evaluates_hand() {
     let hand = Hand::from_str("A♥ K♥ Q♥ J♥ 10♥").unwrap();
     assert_eq!(hand.evaluate(), "royal flush");
