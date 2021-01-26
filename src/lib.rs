@@ -303,7 +303,7 @@ pub fn random_suit() -> char {
 /// assert_eq!(poker::rank_name('2'), "2");
 /// ```
 pub fn rank_name(rank: char) -> String {
-    println!("file {}, line {}", file!(), line!());
+    //println!("file {}, line {}", file!(), line!());
     let rank = match rank {
         // Why do I need to convert each of these to String?
         'T' => "10".to_string(),
